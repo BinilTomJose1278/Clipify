@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-    .coveredImage{
+    #target{
         
     /* Full height */
     margin: 0%;
@@ -21,39 +21,14 @@
     background-size: cover;
     }
 
-    .outsideWrapper {
-      width:125px;
-      height:125px;
-      margin:20px 60px;
-      border:1px solid blue;
-    }
-    .insideWrapper {
-      width:100%;
-      height:100%;
-      position:relative;
-    }
-    .coveringCanvas {
-      width:100%;
-      height:100%;
-      position:absolute;
-      top:0px;
-      left:0px;
-      background-color: rgba(0, 0, 0, .1);
-    }
     </style>
 </head>
 <body>
     <p>
         <h1>"Text here"</h1>
     </p>
-    <div class="outsideWrapper">
-        <div class="innerWrapper">
-            <img id="target" src="white.png" height="580" class="coveredImage">
-            <canvas class="coveringCanvas"></canvas>
-            <div id="output"></div>
-        </div>
-    </div>
+    <img id="target" src="white.png" height="580" class="coveredImage">
 </body>
 <script src="screenshot.js"></script>
-<!-- <script src="cropper.js"></script> -->
+<script src="cropper.js"></script>
 </html>

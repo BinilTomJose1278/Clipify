@@ -1,39 +1,104 @@
-//Canvas
-var canvas = document.getElementById('coveringCanvas');
-var ctx = canvas.getContext('2d');
-//Variables
-var canvasx = $(canvas).offset().left;
-var canvasy = $(canvas).offset().top;
-var last_mousex = last_mousey = 0;
-var mousex = mousey = 0;
-var mousedown = false;
+var tothecroppa = function() {
+  var c = document.createElement( 'canvas' ),
+      cx = c.getContext( '2d' ),
+      img = null,
+      mousedown = false,
+      done = false,
+      detectevent = 'dblclick',
+      ic = {};
+  if ('contextMenu' in document.documentElement ) {
+    var menu = '<menu type="context" id="croppamenu">'+
+               '<menuitem label="crop" id="croppaitem" '+
+               ' onclick="tothecroppa.initcrop()">'+
+               '</menuitem></menu>';
+    document.body.innerHTML += menu;
+    document.body.setAttribute( 'contextmenu', 'croppamenu' );
+    detectevent = 'contextmenu';
+  } 
 
-//Mousedown
-$(canvas).on('mousedown', function(e) {
-    last_mousex = parseInt(e.clientX-canvasx);
-	last_mousey = parseInt(e.clientY-canvasy);
-    mousedown = true;
-});
-
-//Mouseup
-$(canvas).on('mouseup', function(e) {
-    mousedown = false;
-});
-
-//Mousemove
-$(canvas).on('mousemove', function(e) {
-    mousex = parseInt(e.clientX-canvasx);
-	mousey = parseInt(e.clientY-canvasy);
-    if(mousedown) {
-        ctx.clearRect(0,0,canvas.width,canvas.height); //clear canvas
-        ctx.beginPath();
-        var width = mousex-last_mousex;
-        var height = mousey-last_mousey;
-        ctx.rect(last_mousex,last_mousey,width,height);
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 10;
-        ctx.stroke();
+  c.style.display = 'block';
+  c.style.position = 'absolute';
+  c.style.left = '-20000px';
+  c.style.top = 0;
+  document.body.appendChild( c );
+  
+  document.body.addEventListener( detectevent, function( ev ) {
+    if ( ev.target.tagName === 'IMG' ) {
+      if ( detectevent === 'contextmenu' ) {
+        document.querySelector('#croppaitem').disabled = false;
+      } 
+      img = ev.target;
+      ic = {
+        left: img.offsetLeft,
+        top: img.offsetTop,
+        width: img.offsetWidth,
+        height: img.offsetHeight
+      }
+      if ( detectevent === 'dblclick' ) {
+        initcrop();
+      }
+    } else {
+      if ( detectevent === 'contextmenu' ) {
+        document.querySelector('#croppaitem').disabled = true;
+      }
     }
-    //Output
-    $('#output').html('current: '+mousex+', '+mousey+'<br/>last: '+last_mousex+', '+last_mousey+'<br/>mousedown: '+mousedown);
-});
+  }, false);
+  
+  c.addEventListener( 'mousemove', function( ev ) {
+    if ( mousedown && !done ) {
+      var mouse = [ ev.clientX - ic.left , ev.clientY - ic.top ];
+      cx.drawImage( img, 0, 0 );
+      cx.fillStyle = 'rgba( 0,0,0,0.8)';
+      rect = { 
+        x: startx,
+        y: starty,
+        x1: mouse[0] - startx,
+        y1: mouse[1] - starty
+     };
+     cx.fillRect( 0, 0, rect.x, ic.height );
+     cx.fillRect( rect.x + rect.x1, 0, ic.width - rect.x1, ic.height );
+     cx.fillRect( rect.x, 0, rect.x1, rect.y );
+     cx.fillRect( rect.x, rect.y+rect.y1, rect.x1, ic.height - rect.y1 );
+   }
+  }, false );
+  
+   c.addEventListener ( 'keydown', function( ev ) {
+     if ( ev.keyCode === 13 ) {
+       crop();
+     }
+   }, false );
+   c.addEventListener( 'mousedown', function( ev ) {
+     if ( !done ) {
+       mousedown = true;
+       startx = ( ev.clientX - ic.left );
+       starty = ( ev.clientY - ic.top );
+     }
+   },false);
+   c.addEventListener( 'dblclick', function( ev ) {
+     crop();
+  });
+  
+   c.addEventListener( 'mouseup', function( ev ) {
+     mousedown = false;
+   }, false );
+  function crop() {
+    done = true;
+    c.width = rect.x1;
+    c.height = rect.y1;
+    cx.drawImage( 
+      img, rect.x, rect.y, rect.x1, rect.y1, 0, 0, rect.x1, rect.y1 
+    );
+  }
+  function initcrop(){
+    c.width = ic.width;
+    c.height = ic.height;
+    c.style.position = 'absolute';
+    c.style.top = ic.top + 'px';
+    c.style.left = ic.left + 'px';
+    img.style.visibility = 'hidden';
+    cx.drawImage( img, 0 ,0);
+    cx.fillStyle = 'rgba( 0,0,0,0.4)';
+    cx.fillRect( 0, 0, ic.width, ic.height );
+  };
+  return {initcrop:initcrop};
+}();
